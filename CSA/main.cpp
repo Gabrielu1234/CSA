@@ -4,6 +4,8 @@
 #include <cstdlib>
 #include <ctime>
 
+//salut
+
 void showEnemyAction(Enemy& enemy) {
     // Randomly determine the enemy's action
     int action = rand() % 3;  // Random number between 0 and 2
