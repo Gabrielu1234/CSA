@@ -1,17 +1,15 @@
 // Character.cpp
 #include "Character.h"
+#include <SFML/Graphics.hpp>
 
 Character::Character(std::string name, int maxHp, int attackPower, int defensePower)
     : name(name), maxHp(maxHp), hp(maxHp), attackPower(attackPower), defensePower(defensePower) {
 }
 
 Character::~Character() {
-    std::cout << name << " destroyed.\n";
+    //std::cout << name << " destroyed.\n";
 }
 
-void Character::printStatus() const {
-    std::cout << name << " HP: " << hp << "/" << maxHp << " | ATK: " << attackPower << " | DEF: " << defensePower << "\n";
-}
 
 bool Character::isAlive() const {
     return hp > 0;
@@ -25,7 +23,7 @@ void Character::takeDamage(int damage) {
     int finalDamage = damage - defensePower;  // Apply defense to reduce damage
     if (finalDamage < 0) finalDamage = 0;  // Ensure no negative damage
     hp -= finalDamage;  // Reduce HP by damage amount
-    std::cout << name << " takes " << finalDamage << " damage!\n";
+    //std::cout << name << " takes " << finalDamage << " damage!\n";
 }
 
 Character& Character::operator=(const Character& other) {
