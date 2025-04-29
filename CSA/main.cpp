@@ -1,6 +1,9 @@
-#include <iostream>
+﻿#include <iostream>
 #include "Player.h"
 #include "Enemy.h"
+#include "Boss.h"
+#include "Character.h"
+#include "GameManager.h"
 #include <cstdlib>
 #include <ctime>
 #include <SFML/Graphics.hpp>
@@ -11,6 +14,20 @@
 #include <memory>
 
 //salut
+// 2/3 alocari dinamice, posibil sa adaug sunete dinamic, boss, animati etc.
+//ierarhii de clase (charater in 2 (player si enemy), boss mosteneste enemy
+//supradefinire a 3 operatori dar nefolositi, urmeaza :)
+//polimorfism de mostenire avem, ad-hoc avem, parametric nu (poate pun)
+//tablou polimorfm am, Character* characters[2]
+//supradefinirea a cel putin o metoda am, attack def si heal
+//metoda statica de resetare a jocului am, GameManager::resetGame, mai sunt optiuni de altele, sunet animatii etc.
+//exceptii am, in player la takeTurn, in enemy la heal si cele de la sfml
+//functii friend nu am
+// clasa abstracta am, Character e abstracta
+//lucru cu fisiere am, arial si arena dar nu cred ca se pun
+//clase template nu am
+
+//de lucru la frontend
 
 int main() {
 
@@ -27,8 +44,10 @@ int main() {
 
     // Dynamically allocate a player (using 'new')
     int level = 1;
-    Character* player = new Player("Erou");
-    Character* enemy = new Enemy("Hot", level);
+
+    Character* characters[2];
+    characters[0] = new Player("Erou");
+    characters[1] = new Enemy("Hot", level);
 
     sf::RenderWindow window(sf::VideoMode({ 1050, 700 }), "CSA");
     window.setFramerateLimit(60);
@@ -42,16 +61,21 @@ int main() {
 
     sf::Font font("arial.ttf");
 
+	sf::Text nivel(font);
+	nivel.setCharacterSize(24);
+	nivel.setPosition({ 0, 0 });
+	nivel.setString("Nivel: " + std::to_string(level));
+
     sf::Text playerStatus(font);
     playerStatus.setCharacterSize(24);
     playerStatus.setPosition({ 0, 700 - 24*6 });
-    playerStatus.setString("Erou HP: " + std::to_string(player->getHp()) + "/" + std::to_string(player->getMaxHp()) +
-        "Attack: " + std::to_string(player->getAttackPower()) + "Defence: " + std::to_string(player->getDefensePower()));
+    playerStatus.setString("Erou HP: " + std::to_string(characters[0]->getHp()) + "/" + std::to_string(characters[0]->getMaxHp()) +
+        "Attack: " + std::to_string(characters[0]->getAttackPower()) + "Defence: " + std::to_string(characters[0]->getDefensePower()));
 
     sf::Text enemyStatus(font);
     enemyStatus.setCharacterSize(24);
     enemyStatus.setPosition({ 0, 700 - 24*5 });
-    enemyStatus.setString("Hot HP: " + std::to_string(enemy->getHp()) + "/" + std::to_string(enemy->getMaxHp()));
+    enemyStatus.setString("Hot HP: " + std::to_string(characters[1]->getHp()) + "/" + std::to_string(characters[1] ->getMaxHp()));
 
     sf::Text actionText(font);
     actionText.setCharacterSize(24);
@@ -84,11 +108,11 @@ int main() {
 
                     if (action != '\0') {
                         try {
-							player_def = player->getDefensePower();
-                            dynamic_cast<Player*>(player)->takeTurn(*enemy, action);
-							if (enemy->getDefensePower() != enemy_def && enemy_def!=0)
+							player_def = characters[0]->getDefensePower();
+                            dynamic_cast<Player*>(characters[0])->takeTurn(*characters[1], action);
+							if (characters[1]->getDefensePower() != enemy_def && enemy_def != 0)
 							{
-								enemy->setDefensePower(enemy->getDefensePower() / 2);
+								characters[1]->setDefensePower(characters[1]->getDefensePower() / 2);
 							}
                             playerTurn = false;
                         }
@@ -99,11 +123,26 @@ int main() {
                 }
 
                 // Restart next level after victory
-                if (!enemy->isAlive() && keyPressed->scancode == sf::Keyboard::Scancode::C) {
+                if (!characters[1]->isAlive() && keyPressed->scancode == sf::Keyboard::Scancode::C) {
                     level++;
-                    delete enemy;
-                    enemy = new Enemy("Hot", level);
-                    dynamic_cast<Player*>(player)->levelUp();
+                    delete characters[1];
+                    if (level % 5 == 0) { // La fiecare 5 niveluri, creează un Boss
+                        characters[1] = new Boss("Sef", level);
+                    }
+                    else {
+                        characters[1] = new Enemy("Hot", level);
+                    }
+                    if(level % 5 == 1)
+					{
+						characters[0]->setMaxHp(characters[0]->getMaxHp() + 30);
+						characters[0]->setHp(characters[0]->getMaxHp());
+						characters[0]->setAttackPower(characters[0]->getAttackPower() + 10);
+						characters[0]->setDefensePower(characters[0]->getDefensePower() + 5);
+					}
+					else
+					{
+                        dynamic_cast<Player*>(characters[0])->levelUp();
+					}
                     playerTurn = true;
                     enemyAction.setString("");
 					actionText.setString("Press A to Attack, D to defend, H to Heal");
@@ -112,55 +151,66 @@ int main() {
         }
 
         if (!gameOver && !playerTurn) {
-            if (enemy->isAlive()) {
-                int prevDef = enemy->getDefensePower();
-                int prevHp = player->getHp();
+            if (characters[1]->isAlive()) {
+                int prevDef = characters[1]->getDefensePower();
+                int prevHp = characters[0]->getHp();
 
-				enemy_def = enemy->getDefensePower();
-                dynamic_cast<Enemy*>(enemy)->takeTurn(*player);
+				enemy_def = characters[1]->getDefensePower();
+                dynamic_cast<Enemy*>(characters[1])->takeTurn(*characters[0]);
 
-				if (player->getDefensePower() != player_def)
+				if (characters[0]->getDefensePower() != player_def)
 				{
-					player->setDefensePower(player->getDefensePower() / 2);
+					characters[0]->setDefensePower(characters[0]->getDefensePower() / 2);
 				}
 
-                if (player->getHp() < prevHp) {
-                    enemyAction.setString(enemy->getName() + " attacked you!");
+                if (characters[0]->getHp() < prevHp) {
+                    enemyAction.setString(characters[1]->getName() + " attacked you!");
                 }
-                else if (enemy->getDefensePower() > prevDef) {
-                    enemyAction.setString(enemy->getName() + " defended!");
+                else if (characters[1]->getDefensePower() > prevDef) {
+                    enemyAction.setString(characters[1]->getName() + " defended!");
                 }
                 else {
-                    enemyAction.setString(enemy->getName() + " healed!");
+                    enemyAction.setString(characters[1]->getName() + " healed!");
                 }
 
                 playerTurn = true;
             }
         }
+
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::R)) {
+            GameManager::resetGame(characters, level);
+            gameOver = false; // Asigură-te că jocul nu este în starea de Game Over
+            playerTurn = true; // Jucătorul începe din nou
+            actionText.setString("Game Reset! Press A to Attack, D to Defend, H to Heal");
+        }
+
         if (!sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A) &&
             !sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D) &&
             !sf::Keyboard::isKeyPressed(sf::Keyboard::Key::H) &&
-            !sf::Keyboard::isKeyPressed(sf::Keyboard::Key::C)) {
+            !sf::Keyboard::isKeyPressed(sf::Keyboard::Key::C) &&
+            !sf::Keyboard::isKeyPressed(sf::Keyboard::Key::R)) {
             bool keyPressed = false;
 
 
             // Game over check
-            if (!player->isAlive()) {
+            if (!characters[0]->isAlive()) {
                 actionText.setString("You Died! Press ESC to Exit");
                 gameOver = true;
             }
-            else if (!enemy->isAlive()) {
-                actionText.setString("You defeated the " + enemy->getName() + "! Press C to continue.");
+            else if (!characters[1]->isAlive()) {
+                actionText.setString("You defeated the " + characters[1]->getName() + "! Press C to continue.");
             }
 
             // Update UI
-            playerStatus.setString("Erou HP: " + std::to_string(player->getHp()) + "/" + std::to_string(player->getMaxHp()) +
-                "  ATK: " + std::to_string(player->getAttackPower()) + "  DEF: " + std::to_string(player->getDefensePower()));
-            enemyStatus.setString("Hot HP: " + std::to_string(enemy->getHp()) + "/" + std::to_string(enemy->getMaxHp()) +
-                "  ATK: " + std::to_string(enemy->getAttackPower()) + "  DEF: " + std::to_string(enemy->getDefensePower()));
+            playerStatus.setString("Erou HP: " + std::to_string(characters[0]->getHp()) + "/" + std::to_string(characters[0]->getMaxHp()) +
+                "  ATK: " + std::to_string(characters[0]->getAttackPower()) + "  DEF: " + std::to_string(characters[0]->getDefensePower()));
+            enemyStatus.setString("Hot HP: " + std::to_string(characters[1]->getHp()) + "/" + std::to_string(characters[1]->getMaxHp()) +
+                "  ATK: " + std::to_string(characters[1]->getAttackPower()) + "  DEF: " + std::to_string(characters[1]->getDefensePower()));
+			nivel.setString("Nivel: " + std::to_string(level));
 
             window.clear();
 			window.draw(background);
+			window.draw(nivel);
             window.draw(playerStatus);
             window.draw(enemyStatus);
             window.draw(actionText);
@@ -168,7 +218,8 @@ int main() {
             window.display();
         }
     }
-        return 0;
+    delete characters;
+    return 0;
 }
 
 

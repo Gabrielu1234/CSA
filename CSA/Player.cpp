@@ -35,6 +35,9 @@ void Player::levelUp() {
    this->level++;  
    this->attackPower += 5;
    this->defensePower += 2;
+   this->hp += 15;
+   if (this->hp > this->maxHp)
+	   this->hp = this->maxHp;
    this->maxHp += 20;  
    //std::cout << name << " leveled up to level " << level << "!\n";  
 }
