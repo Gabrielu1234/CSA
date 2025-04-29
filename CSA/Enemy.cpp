@@ -5,7 +5,7 @@
 #include <ctime>
 
 Enemy::Enemy(std::string name, int level)
-    : Character(name, 50 + (level * 10), 10 + (level * 3), 3), level(level) {
+    : Character(name, 50 + (level * 10), 10 + (level * 3), 3 + ((level-1)*2)), level(level) {
     //std::cout << "Enemy " << name << " created with level " << level << ".\n";
 }
 
@@ -42,7 +42,7 @@ void Enemy::takeTurn(Character& target)  {
         attack(target);
     }
     else if (action < 80) {  // 20% chance to defend
-		defensePower *= 2;  
+		setDefensePower(getDefensePower() * 2);
     }
     else {  // 20% chance to heal
         heal();

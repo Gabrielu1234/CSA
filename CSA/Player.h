@@ -16,7 +16,7 @@ public:
 
     void levelUp();
 
-    void takeTurn(Character& target);
+    void takeTurn(Character& target,char action);
 
     // Getter
     int getLevel() const;

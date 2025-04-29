@@ -33,37 +33,27 @@ void Player::heal() {
 
 void Player::levelUp() {  
    this->level++;  
-   this->attackPower += 5;  
+   this->attackPower += 5;
+   this->defensePower += 2;
    this->maxHp += 20;  
    //std::cout << name << " leveled up to level " << level << "!\n";  
 }
 
 
-void Player::takeTurn(Character& target)
+void Player::takeTurn(Character& target,char action)
 {
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A))
-    {
+    switch (action) {
+    case 'A':
         attack(target);
-    }
-    else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D))
-    {
-        setDefensePower(getDefensePower() + 5);
-    }
-    else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::H))
-    {
+        break;
+    case 'D':
+        setDefensePower(getDefensePower() *2);
+        break;
+    case 'H':
         heal();
-    }
-    else
-    {
-        // Check if *any* key is pressed (but not A, D, H)
-        for (int key = (int)sf::Keyboard::Key::A; key <= (int)sf::Keyboard::Key::Z; ++key)
-        {
-            if (sf::Keyboard::isKeyPressed(static_cast<sf::Keyboard::Key>(key)))
-            {
-                throw std::invalid_argument("Invalid key pressed! Use A, D, or H.");
-            }
-        }
-        // If no keys pressed at all: do nothing
+        break;
+    default:
+        throw std::invalid_argument("Invalid action passed to Player::takeTurn");
     }
 }
 
