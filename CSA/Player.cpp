@@ -14,11 +14,11 @@ Player::~Player() {
 }
 
 void Player::attack(Character& target) {
-    target.takeDamage(attackPower);
+    target.takeDamage(attackPower*2);
 }
 
 void Player::defend() {
-
+    setDefensePower(getDefensePower() * 2);
 }
 void Player::heal() {
     if (hp < maxHp) {
@@ -31,26 +31,23 @@ void Player::heal() {
     }
 }
 
-void Player::levelUp() {  
-   this->level++;  
-   this->attackPower += 5;
-   this->defensePower += 2;
-   this->hp += 15;
-   if (this->hp > this->maxHp)
-	   this->hp = this->maxHp;
-   this->maxHp += 20;  
-   //std::cout << name << " leveled up to level " << level << "!\n";  
-}
 
 
 void Player::takeTurn(Character& target,char action)
 {
+	int crit = rand() % 100;
     switch (action) {
     case 'A':
-        attack(target);
+        if (crit < 10) { // 10% chance for a critical hit
+            attack(target);
+        }
+        else
+        {
+            target - attackPower;
+        }
         break;
     case 'D':
-        setDefensePower(getDefensePower() *2);
+        defend();
         break;
     case 'H':
         heal();
@@ -63,4 +60,45 @@ void Player::takeTurn(Character& target,char action)
 
 int Player::getLevel() const {
     return level;
+}
+
+Player& Player::operator++() {
+    this->level++;
+	if (level % 5 == 0)
+	{
+		this->attackPower *= 1.5;
+		this->defensePower  *= 1.6;
+		this->hp += 40;
+	}
+	else
+	{
+		this->attackPower *= 1.25;
+		this->defensePower *= 1.4;
+		this->hp += 15;
+	}
+    if (this->hp > this->maxHp)
+        this->hp = this->maxHp;
+    this->maxHp += 20;
+    return *this;
+}
+
+Player Player::operator++(int) {
+    Player temp = *this;
+    this->level++;
+    if (level % 5 == 0)
+    {
+        this->attackPower *= 1.5;
+        this->defensePower *= 1.6;
+        this->hp += 40;
+    }
+    else
+    {
+        this->attackPower *= 1.25;
+        this->defensePower *= 1.4;
+        this->hp += 15;
+    }
+    if (this->hp > this->maxHp)
+        this->hp = this->maxHp;
+    this->maxHp += 20;
+    return temp;
 }

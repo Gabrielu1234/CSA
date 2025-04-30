@@ -19,7 +19,7 @@ void Enemy::attack(Character& target) {
 }
 
 void Enemy::defend() { 
-
+    setDefensePower(getDefensePower() * 2);
  }
 
 void Enemy::heal() {
@@ -42,7 +42,7 @@ void Enemy::takeTurn(Character& target)  {
         attack(target);
     }
     else if (action < 80) {  // 20% chance to defend
-		setDefensePower(getDefensePower() * 2);
+        defend();
     }
     else {  // 20% chance to heal
         heal();

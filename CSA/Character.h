@@ -20,16 +20,16 @@ public:
     virtual void heal() = 0;
 
     // Getters
-    int getHp() const { return hp; }  // Returns the current HP
-    int getMaxHp() const { return maxHp; }  // Returns the maximum HP
-    int getAttackPower() const { return attackPower; }  // Returns the attack power
-    int getDefensePower() const { return defensePower; }  // Returns the defense power
+    int getHp() const { return hp; }  
+    int getMaxHp() const { return maxHp; }  
+    int getAttackPower() const { return attackPower; }  
+    int getDefensePower() const { return defensePower; }  
 
 	//Setters
-	void setHp(int newHp) { hp = newHp; }  // Sets the current HP
-	void setMaxHp(int newMaxHp) { maxHp = newMaxHp; }  // Sets the maximum HP
-	void setAttackPower(int newAttackPower) { attackPower = newAttackPower; }  // Sets the attack power
-	void setDefensePower(int newDefensePower) { defensePower = newDefensePower; }  // Sets the defense power
+	void setHp(int newHp) { hp = newHp; }  
+	void setMaxHp(int newMaxHp) { maxHp = newMaxHp; }  
+	void setAttackPower(int newAttackPower) { attackPower = newAttackPower; }  
+	void setDefensePower(int newDefensePower) { defensePower = newDefensePower; }  
 
 
 
@@ -37,10 +37,16 @@ public:
     bool isAlive() const;
 
     // New methods
-    std::string getName() const;         // Returns the character's name
-    void takeDamage(int damage);         // Reduces the character's HP by damage amount
+    std::string getName() const;
+	void setName(std::string newName) { name = newName; }
+    void takeDamage(int damage);  
+
+	friend class GameManager; 
 
     // Operator overloads
+    Character& operator-(int damage);
+    Character& operator+(int heal);
+
     Character& operator=(const Character& other);
     bool operator==(const Character& other) const;
     friend std::ostream& operator<<(std::ostream& out, const Character& c);

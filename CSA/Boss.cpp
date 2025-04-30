@@ -3,10 +3,10 @@
 
 Boss::Boss(std::string name, int level)
     : Enemy(name, level) {
-    setMaxHp(getMaxHp() * 2);
+    setMaxHp(getMaxHp() * 1.5);
     setHp(getMaxHp());
-    setAttackPower(getAttackPower() * 2);
-    setDefensePower(getDefensePower() * 2);
+    setAttackPower(getAttackPower() * 1.2);
+    setDefensePower(getDefensePower() * 1.4);
 }
 
 Boss::~Boss() {

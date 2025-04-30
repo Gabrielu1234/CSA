@@ -6,6 +6,7 @@
 #include "GameManager.h"
 #include <cstdlib>
 #include <ctime>
+#include <fstream>
 #include <SFML/Graphics.hpp>
 #include <SFML/Window.hpp>
 #include <SFML/System.hpp>
@@ -14,17 +15,17 @@
 #include <memory>
 
 //salut
-// 2/3 alocari dinamice, posibil sa adaug sunete dinamic, boss, animati etc.
+// 3 alocari dinamice new, 2 delete
 //ierarhii de clase (charater in 2 (player si enemy), boss mosteneste enemy
-//supradefinire a 3 operatori dar nefolositi, urmeaza :)
+//supradefinire a multi supraoperatori, 2 pana acum cred ca sunt folositi
 //polimorfism de mostenire avem, ad-hoc avem, parametric nu (poate pun)
 //tablou polimorfm am, Character* characters[2]
 //supradefinirea a cel putin o metoda am, attack def si heal
 //metoda statica de resetare a jocului am, GameManager::resetGame, mai sunt optiuni de altele, sunet animatii etc.
 //exceptii am, in player la takeTurn, in enemy la heal si cele de la sfml
-//functii friend nu am
+//functii friend am una, care fusese 2.
 // clasa abstracta am, Character e abstracta
-//lucru cu fisiere am, arial si arena dar nu cred ca se pun
+//lucru cu fisiere am, salvarea nivelului, a caracterelor, a inamicilor
 //clase template nu am
 
 //de lucru la frontend
@@ -46,6 +47,7 @@ int main() {
     int level = 1;
 
     Character* characters[2];
+
     characters[0] = new Player("Erou");
     characters[1] = new Enemy("Hot", level);
 
@@ -82,6 +84,11 @@ int main() {
     actionText.setPosition({ 0, 700-24 });
     actionText.setString("Press A to Attack, D to defend, H to Heal");
 
+    sf::Text actionText2(font);
+    actionText2.setCharacterSize(24);
+    actionText2.setPosition({ 0, 24*2 });
+    actionText2.setString("");
+
     sf::Text enemyAction(font);
     enemyAction.setCharacterSize(24);
     enemyAction.setPosition({ 0, 700-24*2 });
@@ -109,7 +116,15 @@ int main() {
                     if (action != '\0') {
                         try {
 							player_def = characters[0]->getDefensePower();
-                            dynamic_cast<Player*>(characters[0])->takeTurn(*characters[1], action);
+                            Player* player = dynamic_cast<Player*>(characters[0]);
+                            if (player) {
+                                player_def = player->getDefensePower();
+                                player->takeTurn(*characters[1], action);
+                            }
+                            else {
+                                std::cerr << "Error: characters[0] is not a Player object." << std::endl;
+                                actionText.setString("Invalid player object.");
+                            }
 							if (characters[1]->getDefensePower() != enemy_def && enemy_def != 0)
 							{
 								characters[1]->setDefensePower(characters[1]->getDefensePower() / 2);
@@ -141,7 +156,10 @@ int main() {
 					}
 					else
 					{
-                        dynamic_cast<Player*>(characters[0])->levelUp();
+                        Player* player = dynamic_cast<Player*>(characters[0]);
+                        if (player) {
+                           ++(*player); 
+                        }
 					}
                     playerTurn = true;
                     enemyAction.setString("");
@@ -184,11 +202,26 @@ int main() {
             actionText.setString("Game Reset! Press A to Attack, D to Defend, H to Heal");
         }
 
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S)) {
+            GameManager::saveToFile(*characters[0], "player_save.txt");
+            GameManager::saveToFile(*characters[1], "enemy_save.txt");
+            actionText2.setString("Game saved!");
+        }
+
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::L)) {
+            GameManager::loadFromFile(*characters[0], "player_save.txt");
+            GameManager::loadFromFile(*characters[1], "enemy_save.txt");
+            actionText2.setString("Game loaded!");
+        }
+
+
         if (!sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A) &&
             !sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D) &&
             !sf::Keyboard::isKeyPressed(sf::Keyboard::Key::H) &&
             !sf::Keyboard::isKeyPressed(sf::Keyboard::Key::C) &&
-            !sf::Keyboard::isKeyPressed(sf::Keyboard::Key::R)) {
+            !sf::Keyboard::isKeyPressed(sf::Keyboard::Key::R) &&
+            !sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S) &&
+            !sf::Keyboard::isKeyPressed(sf::Keyboard::Key::L)) {
             bool keyPressed = false;
 
 
@@ -214,11 +247,13 @@ int main() {
             window.draw(playerStatus);
             window.draw(enemyStatus);
             window.draw(actionText);
+			window.draw(actionText2);
             window.draw(enemyAction);
             window.display();
         }
     }
-    delete characters;
+    delete characters[0];
+    delete characters[1];
     return 0;
 }
 

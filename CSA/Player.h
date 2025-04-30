@@ -14,10 +14,13 @@ public:
     void defend() override;
     void heal() override;
 
-    void levelUp();
 
     void takeTurn(Character& target,char action);
 
     // Getter
     int getLevel() const;
+
+    //Operators
+    Player& operator++(); // Prefix
+    Player operator++(int); // Postfix
 };
