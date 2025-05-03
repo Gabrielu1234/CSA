@@ -14,7 +14,7 @@
 
 #include <memory>
 
-//salut
+//salut 2
 // 3 alocari dinamice new, 2 delete
 //ierarhii de clase (charater in 2 (player si enemy), boss mosteneste enemy
 //supradefinire a multi supraoperatori, 2 pana acum cred ca sunt folositi
