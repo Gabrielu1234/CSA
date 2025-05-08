@@ -192,7 +192,7 @@ int main() {
                                 std::cerr << "Error: characters[0] is not a Player object." << std::endl;
                                 actionText.setString("Invalid player object.");
                             }
-                            if (characters[1]->getDefensePower() != enemy_def && enemy_def != 0)
+                            if ((characters[1]->getDefensePower() != enemy_def) && (enemy_def != 0))
                             {
                                 characters[1]->setDefensePower(characters[1]->getDefensePower() / 2);
                             }
@@ -228,6 +228,7 @@ int main() {
                             ++(*player);
                         }
                     }
+					enemy_def = characters[1]->getDefensePower();
                     playerTurn = true;
                     enemyAction.setString("");
                     actionText.setString("Press S to Save, L to Load, R to Restart");
