@@ -1,11 +1,20 @@
 // Player.h
 #pragma once
 #include "Character.h"
+#include <SFML/Graphics.hpp>
+#include <SFML/Window.hpp>
+#include <SFML/System.hpp>
+#include <SFML/audio.hpp>
 
 class Player : public Character {
 private:
     int level;
+	sf::Texture atackplayer;
+	sf::Texture defendplayer;
+
 public:
+
+
     Player(std::string name);
     virtual ~Player();
 

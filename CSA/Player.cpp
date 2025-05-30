@@ -45,6 +45,7 @@ void Player::takeTurn(Character& target,char action)
         {
             target - attackPower;
         }
+
         break;
     case 'D':
         defend();
