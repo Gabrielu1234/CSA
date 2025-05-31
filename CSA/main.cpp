@@ -30,6 +30,15 @@
 
 //de lucru la frontend
 
+enum class AnimationState {
+    Idle,
+    PlayerAttack,
+    PlayerHit,
+    PlayerDeath,
+    EnemyDeath
+};
+
+
 int main() {
 
 
@@ -51,8 +60,12 @@ int main() {
 
     characters[0] = new Player("Erou");
     characters[1] = new Enemy("Hot", level);
+
 	char alegere = '0';
 	char alegereinamic = '0';
+    AnimationState animState = AnimationState::Idle;
+    int animStep = 0;
+	int enemyAnimStep = 0;
 
     // generare fereastră
     sf::RenderWindow window(sf::VideoMode({ 1050, 700 }), "CSA");
@@ -99,15 +112,45 @@ int main() {
 		std::cerr << "Error loading erou defend texture" << std::endl;
 		return -1;
 	}
-    sf::Sprite erouSprite(erouidle);
+	sf::Texture hotidle;
+	if (!hotidle.loadFromFile("idle_hot.png")) {
+		std::cerr << "Error loading hot idle texture" << std::endl;
+		return -1;
+	}
+	sf::Texture hotattack;
+	if (!hotattack.loadFromFile("attack_hot.png")) {
+		std::cerr << "Error loading hot attack texture" << std::endl;
+		return -1;
+	}
+	sf::Texture hotdeath;
+	if (!hotdeath.loadFromFile("death_hot.png")) {
+		std::cerr << "Error loading hot death texture" << std::endl;
+		return -1;
+	}
+	sf::Texture hothit;
+	if (!hothit.loadFromFile("hit_hot.png")) {
+		std::cerr << "Error loading hot defend texture" << std::endl;
+		return -1;
+	}
     int currentFrame = 0;
-    erouSprite.setPosition({ -50, -50 }); 
-    sf::Clock clock;
+
+    sf::Sprite erouSprite(erouidle);
+    erouSprite.setPosition({ -50, -75 }); 
     erouSprite.scale({4.0f, 4.0f}); 
+    sf::Clock clock;
     float frameDuration = 0.20f;
     float frameDurationDeath = 0.25f;
     int frameCount = 8;
 	int framecountattack = 6; 
+
+	sf::Sprite enemySprite(hotidle);
+	enemySprite.setPosition({ 250, -200 });
+	enemySprite.scale({ 4.0f, 4.0f }); 
+	sf::Clock enemyClock;
+	float enemyFrameDuration = 0.20f;
+	float enemyFrameDurationDeath = 0.25f;
+	int enemyFrameCount = 4;
+	int enemyFrameCountAttack = 6; 
 
     // textele toate
 
@@ -274,7 +317,7 @@ int main() {
 
                 if (characters[0]->getHp() < prevHp) {
                     enemyAction.setString(characters[1]->getName() + " attacked you!");
-                    alegereinamic = 'D';
+                    alegereinamic = 'A';
                 }
                 else if (characters[1]->getDefensePower() > prevDef) {
                     enemyAction.setString(characters[1]->getName() + " defended!");
@@ -319,7 +362,6 @@ int main() {
             !sf::Keyboard::isKeyPressed(sf::Keyboard::Key::L)) {
             bool keyPressed = false;
 
-
             // Game over check
             if (!characters[0]->isAlive()) {
                 actionText.setString("You Died! Press ESC to Exit");
@@ -345,86 +387,140 @@ int main() {
             nivel.setString("Nivel: " + std::to_string(level));
 
 
-            // Update animation
-            if (alegere == 'A')
-            {
-                if (playerturn==true || alegereinamic=='0')
-                {
-                    erouSprite.setTexture(erouattack);
-                    if (clock.getElapsedTime().asSeconds() > frameDuration) {
-                        currentFrame = currentFrame % framecountattack;
-                        erouSprite.setTextureRect(sf::IntRect({ currentFrame * 200,0 }, { 200,200 }));
-                        currentFrame++;
-                        clock.restart();
-                        if (currentFrame >= framecountattack) {
-                            alegere = '0';
-                            currentFrame = 0;
-                            erouSprite.setTexture(erouidle);
-                            erouSprite.setTextureRect(sf::IntRect({ 0,0 }, { 200,200 }));
-							playerturn = false; // Schimbă la tura inamicului
-                        }
-                    }
+           
+            if (!characters[0]->isAlive() && playerdeath == true) {
+                animState = AnimationState::PlayerDeath;
+            }
+			else if (!characters[1]->isAlive()) {
+				animState = AnimationState::EnemyDeath;
+			}
+            else if (animState == AnimationState::Idle) {
+                // Player attacks
+                if (alegere == 'A') {
+                    animState = AnimationState::PlayerAttack;
+                    animStep = 0;
                 }
+                // Only enemy attacks
+                else if (alegere != 'A' && alegereinamic == 'A') {
+                    animState = AnimationState::PlayerHit;
+                    animStep = 0;
+                }
+            }
 
-            }
-            else if (alegereinamic == 'D')
-            {
-                if (playerturn == false)
-                {
-                    erouSprite.setTexture(erouhit);
-                    if (clock.getElapsedTime().asSeconds() > frameDuration) {
-                        currentFrame = currentFrame % 4;
-                        erouSprite.setTextureRect(sf::IntRect({ currentFrame * 200,0 }, { 200,200 }));
-                        currentFrame++;
-                        clock.restart();
-                        if (currentFrame >= 4) {
-                            alegereinamic = '0';
-                            currentFrame = 0;
-                            erouSprite.setTexture(erouidle);
-                            erouSprite.setTextureRect(sf::IntRect({ 0,0 }, { 200,200 }));
-							playerturn = true; // Schimbă la tura jucătorului
+            switch (animState) {
+            case AnimationState::PlayerAttack:
+                if (clock.getElapsedTime().asSeconds() > frameDuration) {
+                    erouSprite.setTexture(erouattack);
+                    erouSprite.setTextureRect(sf::IntRect({ animStep * 200,0 }, { 200,200 }));
+                    animStep++;
+                    clock.restart();
+                    if (animStep >= framecountattack) {
+                        if (alegereinamic == 'A') {
+                            animState = AnimationState::PlayerHit;
+                            animStep = 0;
+                        }
+                        else {
+                            animState = AnimationState::Idle;
+                            animStep = 0;
+                            alegere = '0';
                         }
                     }
                 }
-            }
-            else if(alegere == 'L' && playerdeath==true)
-            {
+                if (enemyClock.getElapsedTime().asSeconds() > enemyFrameDuration)
+                {
+					enemySprite.setTexture(hotattack);
+					enemySprite.setTextureRect(sf::IntRect({ enemyAnimStep * 200,0 }, { 200,200 }));
+					enemyAnimStep++;
+					enemyClock.restart();
+					if (enemyAnimStep >= enemyFrameCountAttack) {
+						if (alegere == 'A') {
+							animState = AnimationState::PlayerHit;
+							enemyAnimStep = 0;
+						}
+						else {
+							animState = AnimationState::Idle;
+							enemyAnimStep = 0;
+							alegereinamic = '0';
+						}
+					}
+                }
+                break;
+            case AnimationState::PlayerHit:
+                if (clock.getElapsedTime().asSeconds() > frameDuration) {
+                    erouSprite.setTexture(erouhit);
+                    erouSprite.setTextureRect(sf::IntRect({ animStep * 200,0 }, { 200,200 }));
+                    animStep++;
+                    clock.restart();
+                    if (animStep >= 4) { 
+                        animState = AnimationState::Idle;
+                        animStep = 0;
+                        alegere = '0';
+                        alegereinamic = '0';
+                    }
+                }
+                if (enemyClock.getElapsedTime().asSeconds() > enemyFrameDuration) {
+					enemySprite.setTexture(hothit);
+					enemySprite.setTextureRect(sf::IntRect({ enemyAnimStep * 200,0 }, { 200,200 }));
+					enemyAnimStep++;
+					enemyClock.restart();
+                    if (enemyAnimStep >= 3) {
+                        animState = AnimationState::Idle;
+                        enemyAnimStep = 0;
+                        alegereinamic = '0';
+                    }
+                }
+                break;
+            case AnimationState::PlayerDeath:
                 erouSprite.setTexture(eroudeath);
                 if (clock.getElapsedTime().asSeconds() > frameDurationDeath) {
-                    currentFrame = currentFrame % 6; 
-                    erouSprite.setTextureRect(sf::IntRect({ currentFrame * 200,0 }, { 200,200 }));
-                    currentFrame++;
+                    erouSprite.setTextureRect(sf::IntRect({ animStep * 200,0 }, { 200,200 }));
+                    animStep++;
                     clock.restart();
-                    if (currentFrame >= 6) {
+                    if (animStep >= 6) {
                         alegere = '0';
                         playerdeath = false;
                         gameOver = true;
-                        // Stay on the last frame of the death animation
-                        erouSprite.setTextureRect(sf::IntRect({ 5*200,0 }, { 200,200 }));
+                        erouSprite.setTextureRect(sf::IntRect({ 5 * 200,0 }, { 200,200 }));
                     }
                 }
-            }
-            else
-            {
-                if (gameOver == false)
-                {
+                break;
+			case AnimationState::EnemyDeath:
+				enemySprite.setTexture(hotdeath);
+				if (enemyClock.getElapsedTime().asSeconds() > enemyFrameDurationDeath) {
+					enemySprite.setTextureRect(sf::IntRect({ enemyAnimStep * 200,0 }, { 200,200 }));
+					enemyAnimStep++;
+					enemyClock.restart();
+					if (enemyAnimStep >= 7) {
+						alegereinamic = '0';
+						gameOver = true;
+						enemySprite.setTextureRect(sf::IntRect({ 6 * 200,0 }, { 200,200 }));
+					}
+				}
+				break;
+            case AnimationState::Idle:
+            default:
                 erouSprite.setTexture(erouidle);
-          
                 if (clock.getElapsedTime().asSeconds() > frameDuration) {
-                    currentFrame = currentFrame % frameCount;
-                    erouSprite.setTextureRect(sf::IntRect({ currentFrame * 200,0 }, { 200,200 }));
-                    currentFrame++;
+                    erouSprite.setTextureRect(sf::IntRect({ animStep * 200,0 }, { 200,200 }));
+                    animStep = (animStep + 1) % frameCount;
                     clock.restart();
                 }
+				if (enemyClock.getElapsedTime().asSeconds() > enemyFrameDuration) {
+					enemySprite.setTexture(hotidle);
+					enemySprite.setTextureRect(sf::IntRect({ enemyAnimStep * 200,0 }, { 200,200 }));
+					enemyAnimStep = (enemyAnimStep + 1) % enemyFrameCount;
+					enemyClock.restart();
+				}
+                break;
             }
-            }
-
+        }
 
             // Drawing
             window.clear();
             window.draw(background);
             window.draw(downbackground);
             window.draw(erouSprite);
+			window.draw(enemySprite);
             window.draw(nivel);
             window.draw(playerStatus);
             window.draw(enemyStatus);
@@ -436,7 +532,7 @@ int main() {
             window.draw(healtext);
             window.draw(escapetext);
             window.display();
-        }
+        
     }
     delete characters[0];
     delete characters[1];
