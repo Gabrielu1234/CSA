@@ -9,8 +9,6 @@
 class Player : public Character {
 private:
     int level;
-	sf::Texture atackplayer;
-	sf::Texture defendplayer;
 
 public:
 

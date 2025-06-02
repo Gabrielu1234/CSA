@@ -22,12 +22,11 @@ void Player::defend() {
 }
 void Player::heal() {
     if (hp < maxHp) {
-        //std::cout << name << " heals for 10 HP.\n";
         hp += 10;
         if (hp > maxHp) hp = maxHp;
     }
     else {
-        //std::cout << name << " is already at full health!\n";
+        std::cout << name << " is already at full health!\n";
     }
 }
 
@@ -38,7 +37,7 @@ void Player::takeTurn(Character& target,char action)
 	int crit = rand() % 100;
     switch (action) {
     case 'A':
-        if (crit < 10) { // 10% chance for a critical hit
+        if (crit < 10) { 
             attack(target);
         }
         else
@@ -67,19 +66,20 @@ Player& Player::operator++() {
     this->level++;
 	if (level % 5 == 0)
 	{
-		this->attackPower *= 1.5;
-		this->defensePower  *= 1.6;
-		this->hp += 40;
+		this->attackPower *= 1.3;
+		this->defensePower  *= 1.4;
+        this->maxHp += 30;
+		this->hp += 30;
 	}
 	else
 	{
-		this->attackPower *= 1.25;
-		this->defensePower *= 1.4;
+		this->attackPower *= 1.15;
+		this->defensePower *= 1.3;
+        this->maxHp += 15;
 		this->hp += 15;
 	}
     if (this->hp > this->maxHp)
         this->hp = this->maxHp;
-    this->maxHp += 20;
     return *this;
 }
 
@@ -88,18 +88,19 @@ Player Player::operator++(int) {
     this->level++;
     if (level % 5 == 0)
     {
-        this->attackPower *= 1.5;
-        this->defensePower *= 1.6;
-        this->hp += 40;
+        this->attackPower *= 1.3;
+        this->defensePower *= 1.3;
+		this->maxHp += 30;
+        this->hp += 20;
     }
     else
     {
-        this->attackPower *= 1.25;
-        this->defensePower *= 1.4;
-        this->hp += 15;
+        this->attackPower *= 1.1;
+        this->defensePower *= 1.2;
+		this->maxHp += 10;
+        this->hp += 5;
     }
     if (this->hp > this->maxHp)
         this->hp = this->maxHp;
-    this->maxHp += 20;
     return temp;
 }

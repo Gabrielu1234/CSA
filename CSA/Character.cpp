@@ -9,7 +9,7 @@ Character::Character(std::string name, int maxHp, int attackPower, int defensePo
 }
 
 Character::~Character() {
-    //std::cout << name << " destroyed.\n";
+    
 }
 
 
@@ -18,15 +18,14 @@ bool Character::isAlive() const {
 }
 
 std::string Character::getName() const {
-    return name;  // Return the character's name
+    return name; 
 }
 
 
 void Character::takeDamage(int damage) {
-    int finalDamage = damage - defensePower;  // Apply defense to reduce damage
-    if (finalDamage < 0) finalDamage = 0;  // Ensure no negative damage
-    hp -= finalDamage;  // Reduce HP by damage amount
-    //std::cout << name << " takes " << finalDamage << " damage!\n";
+    int finalDamage = damage - defensePower;  
+    if (finalDamage < 0) finalDamage = 0;  
+    hp -= finalDamage; 
 }
 
 
@@ -45,13 +44,13 @@ Character& Character::operator=(const Character& other) {
 }
 
 Character& Character::operator-(int damage) {
-    takeDamage(damage); // Utilizează metoda existentă
+    takeDamage(damage);
     return *this;
 }
 
 Character& Character::operator+(int heal) {
     hp += heal;
-    if (hp > maxHp) hp = maxHp; // Asigură-te că hp nu depășește maxHp
+    if (hp > maxHp) hp = maxHp; 
     return *this;
 }
 
