@@ -11,10 +11,7 @@
 #include <SFML/Window.hpp>
 #include <SFML/System.hpp>
 #include <SFML/audio.hpp>
-
 #include <memory>
-
-
 
 enum class PlayerAnimState { Idle, Attack, Hit, Death};
 enum class EnemyAnimState { Idle, Attack, Hit, Death };
@@ -29,7 +26,6 @@ int main() {
 	bool playerturn = true;
 	bool playerdeath = true;
     bool inMenu = true;
-
 
     int player_def = 0;
     int enemy_def = 0;
@@ -55,7 +51,6 @@ int main() {
     // font
     sf::Font font("ToThePointRegular-n9y4.ttf");
 
-
     //patrat transparent gri de meniu
 	sf::RectangleShape menuBackground(sf::Vector2f(1050, 700));
 	menuBackground.setFillColor(sf::Color(128, 128, 128, 230)); 
@@ -73,7 +68,6 @@ int main() {
 	playFromFileText.setCharacterSize(70);
 	playFromFileText.setFillColor(sf::Color::Black);
 	playFromFileText.setPosition({ 100, 200 });
-
 
     // poza background
     sf::Texture texture;
@@ -243,7 +237,6 @@ int main() {
     enemyAction.setFillColor(sf::Color::Black);
     enemyAction.setPosition({ 40, 700 - 31 * 3 });
 
-
     while (window.isOpen()) {
         while (const std::optional event = window.pollEvent()) {
             if (event->is<sf::Event::Closed>()) {
@@ -283,7 +276,6 @@ int main() {
                 if (keyPressed->scancode == sf::Keyboard::Scancode::Escape)
                     window.close();
             }
-
 
             // Player input
             if(playerAnimState==PlayerAnimState::Idle && (enemyAnimState==EnemyAnimState::Idle || enemyAnimState==EnemyAnimState::Death))
@@ -383,11 +375,11 @@ int main() {
         }
 
         //buton de restart
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::R) && playerAnimState==PlayerAnimState::Idle) {
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::R) && playerAnimState==PlayerAnimState::Idle && inMenu==false) {
             GameManager::resetGame(characters, level);
             gameOver = false; 
             playerTurn = true; 
-            actionText.setString("Game Reset! Press S to Save, L to Load, R to Restart");
+            actionText2.setString("Game Reset!");
         }
 
         //buton de salvare
@@ -454,6 +446,7 @@ int main() {
                     "  ATK: " + std::to_string(characters[1]->getAttackPower()) + "  DEF: " + std::to_string(characters[1]->getDefensePower()));
 
             nivel.setString("Nivel: " + std::to_string(level));
+
 
             // logica animatii
             if (alegere == 'A' && alegereinamic != 'A') {
@@ -666,9 +659,6 @@ int main() {
                 }
                 break;
             }
-        
-
-
         }
         // Drawing
         window.clear();
