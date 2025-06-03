@@ -13,7 +13,7 @@
 #include <SFML/audio.hpp>
 #include <memory>
 
-enum class PlayerAnimState { Idle, Attack, Hit, Death};
+enum class PlayerAnimState { Idle, Attack, Hit, Death };
 enum class EnemyAnimState { Idle, Attack, Hit, Death };
 
 int main() {
@@ -23,9 +23,15 @@ int main() {
     bool gameOver = false;
     bool playerTurn = true;
     bool keyPressed = false;
-	bool playerturn = true;
-	bool playerdeath = true;
+    bool playerturn = true;
+    bool playerdeath = true;
     bool inMenu = true;
+    bool attackKeyHandled = false;
+    bool defendKeyHandled = false;
+    bool healKeyHandled = false;
+    bool saveKeyHandled = false;
+    bool loadKeyHandled = false;
+    bool restartKeyHandled = false;
 
     int player_def = 0;
     int enemy_def = 0;
@@ -37,8 +43,8 @@ int main() {
     characters[0] = new Player("Erou");
     characters[1] = new Enemy("Hot", level);
 
-	char alegere = '0';
-	char alegereinamic = '0';
+    char alegere = '0';
+    char alegereinamic = '0';
     PlayerAnimState playerAnimState = PlayerAnimState::Idle;
     EnemyAnimState  enemyAnimState = EnemyAnimState::Idle;
     int playerAnimStep = 0;
@@ -52,22 +58,22 @@ int main() {
     sf::Font font("ToThePointRegular-n9y4.ttf");
 
     //patrat transparent gri de meniu
-	sf::RectangleShape menuBackground(sf::Vector2f(1050, 700));
-	menuBackground.setFillColor(sf::Color(128, 128, 128, 230)); 
+    sf::RectangleShape menuBackground(sf::Vector2f(1050, 700));
+    menuBackground.setFillColor(sf::Color(128, 128, 128, 230));
     menuBackground.setPosition({ 0, 0 });
 
     //text cu buton play
     sf::Text playText(font);
-	playText.setString("Play");
-	playText.setCharacterSize(70);
-	playText.setFillColor(sf::Color::Black);
-	playText.setPosition({ 100, 100 });
+    playText.setString("Play");
+    playText.setCharacterSize(70);
+    playText.setFillColor(sf::Color::Black);
+    playText.setPosition({ 100, 100 });
 
-	sf::Text playFromFileText(font);
-	playFromFileText.setString("Play from file");
-	playFromFileText.setCharacterSize(70);
-	playFromFileText.setFillColor(sf::Color::Black);
-	playFromFileText.setPosition({ 100, 200 });
+    sf::Text playFromFileText(font);
+    playFromFileText.setString("Play from file");
+    playFromFileText.setCharacterSize(70);
+    playFromFileText.setFillColor(sf::Color::Black);
+    playFromFileText.setPosition({ 100, 200 });
 
     // poza background
     sf::Texture texture;
@@ -92,68 +98,68 @@ int main() {
         std::cerr << "Error loading erou texture" << std::endl;
         return -1;
     }
-	sf::Texture erouattack;
-	if (!erouattack.loadFromFile("attack_erou.png")) {
-		std::cerr << "Error loading erou attack texture" << std::endl;
-		return -1;
-	}
+    sf::Texture erouattack;
+    if (!erouattack.loadFromFile("attack_erou.png")) {
+        std::cerr << "Error loading erou attack texture" << std::endl;
+        return -1;
+    }
     sf::Texture eroudeath;
-	if (!eroudeath.loadFromFile("death_erou.png")) {
-		std::cerr << "Error loading erou death texture" << std::endl;
-		return -1;
-	}
-	sf::Texture erouhit;
-	if (!erouhit.loadFromFile("hit_erou.png")) {
-		std::cerr << "Error loading erou defend texture" << std::endl;
-		return -1;
-	}
-	sf::Texture hotidle;
-	if (!hotidle.loadFromFile("idle_hot.png")) {
-		std::cerr << "Error loading hot idle texture" << std::endl;
-		return -1;
-	}
-	sf::Texture hotattack;
-	if (!hotattack.loadFromFile("attack_hot.png")) {
-		std::cerr << "Error loading hot attack texture" << std::endl;
-		return -1;
-	}
-	sf::Texture hotdeath;
-	if (!hotdeath.loadFromFile("death_hot.png")) {
-		std::cerr << "Error loading hot death texture" << std::endl;
-		return -1;
-	}
-	sf::Texture hothit;
-	if (!hothit.loadFromFile("hit_hot.png")) {
-		std::cerr << "Error loading hot defend texture" << std::endl;
-		return -1;
-	}
+    if (!eroudeath.loadFromFile("death_erou.png")) {
+        std::cerr << "Error loading erou death texture" << std::endl;
+        return -1;
+    }
+    sf::Texture erouhit;
+    if (!erouhit.loadFromFile("hit_erou.png")) {
+        std::cerr << "Error loading erou defend texture" << std::endl;
+        return -1;
+    }
+    sf::Texture hotidle;
+    if (!hotidle.loadFromFile("idle_hot.png")) {
+        std::cerr << "Error loading hot idle texture" << std::endl;
+        return -1;
+    }
+    sf::Texture hotattack;
+    if (!hotattack.loadFromFile("attack_hot.png")) {
+        std::cerr << "Error loading hot attack texture" << std::endl;
+        return -1;
+    }
+    sf::Texture hotdeath;
+    if (!hotdeath.loadFromFile("death_hot.png")) {
+        std::cerr << "Error loading hot death texture" << std::endl;
+        return -1;
+    }
+    sf::Texture hothit;
+    if (!hothit.loadFromFile("hit_hot.png")) {
+        std::cerr << "Error loading hot defend texture" << std::endl;
+        return -1;
+    }
     int currentFrame = 0;
 
     sf::Sprite erouSprite(erouidle);
-    erouSprite.setPosition({ -50, -75 }); 
-    erouSprite.scale({4.0f, 4.0f}); 
+    erouSprite.setPosition({ -50, -75 });
+    erouSprite.scale({ 4.0f, 4.0f });
     sf::Clock clock;
     float frameDuration = 0.10f;
-	float frameDurationAttack = 0.15f;
-	float frameDurationHit = 0.20f;
+    float frameDurationAttack = 0.15f;
+    float frameDurationHit = 0.20f;
     float frameDurationDeath = 0.25f;
     int frameCount = 8;
-	int framecountattack = 6; 
-	int framecountdeath = 6;
-	int framecounthit = 4;
+    int framecountattack = 6;
+    int framecountdeath = 6;
+    int framecounthit = 4;
 
-	sf::Sprite enemySprite(hotidle);
-	enemySprite.setPosition({ 250, -200 });
-	enemySprite.scale({ 4.0f, 4.0f }); 
-	sf::Clock enemyClock;
-	float enemyFrameDuration = 0.20f;
-	float enemyFrameDurationAttack = 0.15f;
-	float enemyFrameDurationHit = 0.30f;
-	float enemyFrameDurationDeath = 0.25f;
-	int enemyFrameCount = 4;
-	int enemyFrameCountAttack = 4;
-	int enemyFrameCountDeath = 7;
-	int enemyFrameCountHit = 3;
+    sf::Sprite enemySprite(hotidle);
+    enemySprite.setPosition({ 250, -200 });
+    enemySprite.scale({ 4.0f, 4.0f });
+    sf::Clock enemyClock;
+    float enemyFrameDuration = 0.20f;
+    float enemyFrameDurationAttack = 0.15f;
+    float enemyFrameDurationHit = 0.30f;
+    float enemyFrameDurationDeath = 0.25f;
+    int enemyFrameCount = 4;
+    int enemyFrameCountAttack = 4;
+    int enemyFrameCountDeath = 7;
+    int enemyFrameCountHit = 3;
 
     // textele toate
     int dimensiune = 40;
@@ -189,39 +195,39 @@ int main() {
 
     // status atac
     sf::Text attacktext(font);
-    attacktext.setCharacterSize(dimensiune+10);
+    attacktext.setCharacterSize(dimensiune + 10);
     attacktext.setPosition({ 580, 700 - 155 });
     attacktext.setFillColor(sf::Color::Red);
-	attacktext.setOutlineColor(sf::Color::Black);
-	attacktext.setOutlineThickness(2);
+    attacktext.setOutlineColor(sf::Color::Black);
+    attacktext.setOutlineThickness(2);
     attacktext.setString("A to Attack");
 
     // status defend
     sf::Text defendtext(font);
-    defendtext.setCharacterSize(dimensiune+10);
+    defendtext.setCharacterSize(dimensiune + 10);
     defendtext.setPosition({ 850, 700 - 155 });
     //orange text
-	defendtext.setFillColor(sf::Color::Yellow);
-	defendtext.setOutlineColor(sf::Color::Black);
-	defendtext.setOutlineThickness(2);
+    defendtext.setFillColor(sf::Color::Yellow);
+    defendtext.setOutlineColor(sf::Color::Black);
+    defendtext.setOutlineThickness(2);
     defendtext.setString("D to Defend");
 
     // status heal
     sf::Text healtext(font);
-    healtext.setCharacterSize(dimensiune+10);
+    healtext.setCharacterSize(dimensiune + 10);
     healtext.setPosition({ 600, 700 - 80 });
     healtext.setFillColor(sf::Color::Green);
-	healtext.setOutlineColor(sf::Color::Black);
-	healtext.setOutlineThickness(2);
+    healtext.setOutlineColor(sf::Color::Black);
+    healtext.setOutlineThickness(2);
     healtext.setString("H to Heal");
 
     // status escape
     sf::Text escapetext(font);
-    escapetext.setCharacterSize(dimensiune+10);
+    escapetext.setCharacterSize(dimensiune + 10);
     escapetext.setPosition({ 850, 700 - 80 });
     escapetext.setFillColor(sf::Color::Cyan);
-	escapetext.setOutlineColor(sf::Color::Black);
-	escapetext.setOutlineThickness(2);
+    escapetext.setOutlineColor(sf::Color::Black);
+    escapetext.setOutlineThickness(2);
     escapetext.setString("ESC to Exit");
 
     // status save
@@ -251,10 +257,10 @@ int main() {
                         sf::FloatRect playFromFileBounds = playFromFileText.getGlobalBounds();
 
                         if (playBounds.contains({ static_cast<float>(mousePos.x), static_cast<float>(mousePos.y) })) {
-                            inMenu = false; 
+                            inMenu = false;
                         }
                         if (playFromFileBounds.contains({ static_cast<float>(mousePos.x), static_cast<float>(mousePos.y) })) {
-                            
+
                             GameManager::loadFromFile(*characters[0], "player_save.txt");
                             GameManager::loadFromFile(*characters[1], "enemy_save.txt");
                             std::ifstream levelFile("level_save.txt");
@@ -262,7 +268,7 @@ int main() {
                                 levelFile >> level;
                                 levelFile.close();
                             }
-                            inMenu = false; 
+                            inMenu = false;
                         }
                     }
                 }
@@ -278,73 +284,161 @@ int main() {
             }
 
             // Player input
-            if(playerAnimState==PlayerAnimState::Idle && (enemyAnimState==EnemyAnimState::Idle || enemyAnimState==EnemyAnimState::Death))
-            if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
-                if (!gameOver && playerTurn) {
-                    char action = '\0';
-                    if (keyPressed->scancode == sf::Keyboard::Scancode::A) action = 'A';
-                    else if (keyPressed->scancode == sf::Keyboard::Scancode::D) action = 'D';
-                    else if (keyPressed->scancode == sf::Keyboard::Scancode::H) action = 'H';
+            if (playerAnimState == PlayerAnimState::Idle && (enemyAnimState == EnemyAnimState::Idle || enemyAnimState == EnemyAnimState::Death)) {
+                if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
+                    if (!gameOver && playerTurn) {
+                        // ATAC
+                        if (keyPressed->scancode == sf::Keyboard::Scancode::A && !attackKeyHandled) {
+                            attackKeyHandled = true;
+                            char action = 'A';
+                            try {
+                                player_def = characters[0]->getDefensePower();
+                                Player* player = dynamic_cast<Player*>(characters[0]);
+                                if (player) {
+                                    player_def = player->getDefensePower();
+                                    player->takeTurn(*characters[1], action);
+                                }
+                                else {
+                                    std::cerr << "Error: characters[0] is not a Player object." << std::endl;
+                                    actionText.setString("Invalid player object.");
+                                }
+                                if ((characters[1]->getDefensePower() != enemy_def) && (enemy_def != 0)) {
+                                    characters[1]->setDefensePower(characters[1]->getDefensePower() / 2);
+                                }
+                                playerTurn = false;
+                                alegere = action;
+                            }
+                            catch (const std::invalid_argument& e) {
+                                actionText.setString(e.what());
+                            }
+                        }
+                        // DEFEND
+                        if (keyPressed->scancode == sf::Keyboard::Scancode::D && !defendKeyHandled) {
+                            defendKeyHandled = true;
+                            char action = 'D';
+                            try {
+                                player_def = characters[0]->getDefensePower();
+                                Player* player = dynamic_cast<Player*>(characters[0]);
+                                if (player) {
+                                    player_def = player->getDefensePower();
+                                    player->takeTurn(*characters[1], action);
+                                }
+                                else {
+                                    std::cerr << "Error: characters[0] is not a Player object." << std::endl;
+                                    actionText.setString("Invalid player object.");
+                                }
+                                if ((characters[1]->getDefensePower() != enemy_def) && (enemy_def != 0)) {
+                                    characters[1]->setDefensePower(characters[1]->getDefensePower() / 2);
+                                }
+                                playerTurn = false;
+                                alegere = action;
+                            }
+                            catch (const std::invalid_argument& e) {
+                                actionText.setString(e.what());
+                            }
+                        }
+                        // HEAL
+                        if (keyPressed->scancode == sf::Keyboard::Scancode::H && !healKeyHandled) {
+                            healKeyHandled = true;
+                            char action = 'H';
+                            try {
+                                player_def = characters[0]->getDefensePower();
+                                Player* player = dynamic_cast<Player*>(characters[0]);
+                                if (player) {
+                                    player_def = player->getDefensePower();
+                                    player->takeTurn(*characters[1], action);
+                                }
+                                else {
+                                    std::cerr << "Error: characters[0] is not a Player object." << std::endl;
+                                    actionText.setString("Invalid player object.");
+                                }
+                                if ((characters[1]->getDefensePower() != enemy_def) && (enemy_def != 0)) {
+                                    characters[1]->setDefensePower(characters[1]->getDefensePower() / 2);
+                                }
+                                playerTurn = false;
+                                alegere = action;
+                            }
+                            catch (const std::invalid_argument& e) {
+                                actionText.setString(e.what());
+                            }
+                        }
+                    }
+                    // SAVE
+                    if (keyPressed->scancode == sf::Keyboard::Scancode::S && !saveKeyHandled && playerAnimState == PlayerAnimState::Idle) {
+                        saveKeyHandled = true;
+                        GameManager::saveToFile(*characters[0], "player_save.txt");
+                        GameManager::saveToFile(*characters[1], "enemy_save.txt");
+                        std::ofstream levelFile("level_save.txt");
+                        if (levelFile.is_open()) {
+                            levelFile << level;
+                            levelFile.close();
+                        }
+                        actionText2.setString("Game saved!");
+                    }
+                    // LOAD
+                    if (keyPressed->scancode == sf::Keyboard::Scancode::L && !loadKeyHandled && playerAnimState == PlayerAnimState::Idle) {
+                        loadKeyHandled = true;
+                        GameManager::loadFromFile(*characters[0], "player_save.txt");
+                        GameManager::loadFromFile(*characters[1], "enemy_save.txt");
+                        std::ifstream levelFile("level_save.txt");
+                        if (levelFile.is_open()) {
+                            levelFile >> level;
+                            levelFile.close();
+                        }
+                        actionText2.setString("Game loaded!");
+                    }
+                    // RESTART
+                    if (keyPressed->scancode == sf::Keyboard::Scancode::R && !restartKeyHandled && playerAnimState == PlayerAnimState::Idle && inMenu == false) {
+                        restartKeyHandled = true;
+                        GameManager::resetGame(characters, level);
+                        gameOver = false;
+                        playerTurn = true;
+                        actionText2.setString("Game Reset!");
+                    }
 
-                    if (action != '\0') {
-                        try {
-                            player_def = characters[0]->getDefensePower();
+
+
+                    // Restart next level after victory
+                    if (!characters[1]->isAlive() && keyPressed->scancode == sf::Keyboard::Scancode::C && playerAnimState == PlayerAnimState::Idle) {
+                        level++;
+                        delete characters[1];
+                        if (level % 5 == 0) { // La fiecare 5 niveluri, creează un Boss
+                            characters[1] = new Boss("Sef", level);
+                        }
+                        else {
+                            characters[1] = new Enemy("Hot", level);
+                        }
+                        if (level % 5 == 1)
+                        {
+                            characters[0]->setMaxHp(characters[0]->getMaxHp() + 30);
+                            characters[0]->setHp(characters[0]->getMaxHp());
+                            characters[0]->setAttackPower(characters[0]->getAttackPower() + 10);
+                            characters[0]->setDefensePower(characters[0]->getDefensePower() + 5);
+                        }
+                        else
+                        {
                             Player* player = dynamic_cast<Player*>(characters[0]);
                             if (player) {
-                                player_def = player->getDefensePower();
-                                player->takeTurn(*characters[1], action);
+                                ++(*player);
                             }
-                            else {
-                                std::cerr << "Error: characters[0] is not a Player object." << std::endl;
-                                actionText.setString("Invalid player object.");
-                            }
-                            if ((characters[1]->getDefensePower() != enemy_def) && (enemy_def != 0))
-                            {
-                                characters[1]->setDefensePower(characters[1]->getDefensePower() / 2);
-                            }
-                            playerTurn = false;
-							alegere = action;
                         }
-                        catch (const std::invalid_argument& e) {
-                            actionText.setString(e.what());
-                        }
+                        enemy_def = characters[1]->getDefensePower();
+                        playerTurn = true;
+                        enemyAction.setString("");
+                        actionText.setString("Press S to Save, L to Load, R to Restart");
+                        enemyAnimState = EnemyAnimState::Idle;
+                        enemyAnimStep = 0;
                     }
-                }
-
-                // Restart next level after victory
-                if (!characters[1]->isAlive() && keyPressed->scancode == sf::Keyboard::Scancode::C && playerAnimState==PlayerAnimState::Idle) {
-                    level++;
-                    delete characters[1];
-                    if (level % 5 == 0) { // La fiecare 5 niveluri, creează un Boss
-                        characters[1] = new Boss("Sef", level);
-                    }
-                    else {
-                        characters[1] = new Enemy("Hot", level);
-                    }
-                    if (level % 5 == 1)
-                    {
-                        characters[0]->setMaxHp(characters[0]->getMaxHp() + 30);
-                        characters[0]->setHp(characters[0]->getMaxHp());
-                        characters[0]->setAttackPower(characters[0]->getAttackPower() + 10);
-                        characters[0]->setDefensePower(characters[0]->getDefensePower() + 5);
-                    }
-                    else
-                    {
-                        Player* player = dynamic_cast<Player*>(characters[0]);
-                        if (player) {
-                            ++(*player);
-                        }
-                    }
-					enemy_def = characters[1]->getDefensePower();
-                    playerTurn = true;
-                    enemyAction.setString("");
-                    actionText.setString("Press S to Save, L to Load, R to Restart");
-                    enemyAnimState = EnemyAnimState::Idle;
-                    enemyAnimStep = 0;
                 }
             }
         }
 
+        if (!sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A)) attackKeyHandled = false;
+        if (!sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D)) defendKeyHandled = false;
+        if (!sf::Keyboard::isKeyPressed(sf::Keyboard::Key::H)) healKeyHandled = false;
+        if (!sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S)) saveKeyHandled = false;
+        if (!sf::Keyboard::isKeyPressed(sf::Keyboard::Key::L)) loadKeyHandled = false;
+        if (!sf::Keyboard::isKeyPressed(sf::Keyboard::Key::R)) restartKeyHandled = false;
         // tura inamic
         if (!gameOver && !playerTurn) {
             if (characters[1]->isAlive()) {
@@ -375,15 +469,15 @@ int main() {
         }
 
         //buton de restart
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::R) && playerAnimState==PlayerAnimState::Idle && inMenu==false) {
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::R) && playerAnimState == PlayerAnimState::Idle && inMenu == false) {
             GameManager::resetGame(characters, level);
-            gameOver = false; 
-            playerTurn = true; 
+            gameOver = false;
+            playerTurn = true;
             actionText2.setString("Game Reset!");
         }
 
         //buton de salvare
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S) && playerAnimState==PlayerAnimState::Idle) {
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S) && playerAnimState == PlayerAnimState::Idle) {
             GameManager::saveToFile(*characters[0], "player_save.txt");
             GameManager::saveToFile(*characters[1], "enemy_save.txt");
             std::ofstream levelFile("level_save.txt");
@@ -395,7 +489,7 @@ int main() {
         }
 
         //buton de incarcare
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::L) && playerAnimState==PlayerAnimState::Idle) {
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::L) && playerAnimState == PlayerAnimState::Idle) {
             GameManager::loadFromFile(*characters[0], "player_save.txt");
             GameManager::loadFromFile(*characters[1], "enemy_save.txt");
             std::ifstream levelFile("level_save.txt");
@@ -520,7 +614,7 @@ int main() {
                 }
             }
 
-            
+
 
             if (alegere != 'A' && alegereinamic == 'A' &&
                 enemyAnimState == EnemyAnimState::Attack && enemyAnimStep >= enemyFrameCountAttack) {
@@ -569,13 +663,14 @@ int main() {
                 }
             }
 
+
             if (playerAnimState == PlayerAnimState::Hit && playerAnimStep >= framecounthit) {
                 playerAnimState = PlayerAnimState::Idle;
                 playerAnimStep = 0;
             }
 
             switch (playerAnimState) {
-                case PlayerAnimState::Attack:
+            case PlayerAnimState::Attack:
                 if (clock.getElapsedTime().asSeconds() > frameDurationAttack) {
                     erouSprite.setTexture(erouattack);
                     erouSprite.setTextureRect(sf::IntRect({ playerAnimStep * 200,0 }, { 200,200 }));
@@ -613,7 +708,7 @@ int main() {
                     clock.restart();
                 }
                 break;
-			}
+            }
 
             switch (enemyAnimState)
             {
@@ -680,7 +775,7 @@ int main() {
         if (inMenu) {
             window.draw(menuBackground);
             window.draw(playText);
-			window.draw(playFromFileText);
+            window.draw(playFromFileText);
         }
         window.display();
     }
